@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Запись</title>
+
+<style>
+body {
+  font-family: Arial;
+  padding: 10px;
+  background: #f5f5f5;
+}
+.card {
+  background: white;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+}
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: black;
+  color: white;
+}
+button:disabled {
+  background: gray;
+}
+</style>
+
+</head>
+<body>
+
+<h2>Запись</h2>
+<div id="list">Загрузка...</div>
+
+<script>
+
+const url = "https://docs.google.com/spreadsheets/d/1Te-ThX6llE54CDCFihSq3JzMTqd-M_emA4JrEZIRMsQ/export?format=csv";
+
+fetch(url)
+.then(res => res.text())
+.then(data => {
+  const rows = data.split("\n").slice(1);
+
+  let html = "";
+
+  rows.forEach(row => {
+    const cols = row.split(",");
+    if (cols.length < 4) return;
+
+    const service = cols[0];
+    const date = cols[1];
+    const time = cols[2];
+    const status = cols[3];
+
+    const disabled = status.trim() !== "свободно";
+
+    html += `
+      <div class="card">
+        <b>${service}</b><br>
+        ${date} — ${time}<br><br>
+        <button ${disabled ? "disabled" : ""} onclick="book('${service}','${date}','${time}')">
+          ${disabled ? "Занято" : "Записаться"}
+        </button>
+      </div>
+    `;
+  });
+
+  document.getElementById("list").innerHTML = html;
+})
+.catch(() => {
+  document.getElementById("list").innerText = "Ошибка загрузки расписания";
+});
+
+function book(service, date, time) {
+  const text = `Здравствуйте, хочу записаться на ${service} ${date} в ${time}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+}
+
+</script>
+
+</body>
+</html>
